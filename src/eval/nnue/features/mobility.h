@@ -16,8 +16,8 @@ namespace Features {
 
 // Mobility
 //
-// Encoded as a bitboard per piece type.  Not incremental.  Mobility
-// is "raw" mobility - we rely on the net to interpret "safe".
+// Encoded as a bitboard per piece type.  Mobility is "raw" mobility - we rely
+// on the net to interpret "safe".
 class Mobility {
  public:
   // feature quantity name
@@ -25,9 +25,9 @@ class Mobility {
   // Hash value embedded in the evaluation function file
   static constexpr std::uint32_t kHashValue = 0x62924F91u;
   // number of feature dimensions (bitboard per piece type)
-  static constexpr IndexType kDimensions = 64 * 6 * 2;
+  static constexpr IndexType kDimensions = 16 * 6 * 2;
   // The maximum value of the number of indexes whose value is 1 at the same time among the feature values
-  static constexpr IndexType kMaxActiveDimensions = 32 * 6 * 2;
+  static constexpr IndexType kMaxActiveDimensions = 16 * 6 * 2;
   // Timing of full calculation instead of difference calculation
   static constexpr TriggerEvent kRefreshTrigger = TriggerEvent::kNone;
 
