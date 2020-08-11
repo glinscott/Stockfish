@@ -693,6 +693,22 @@ bool Position::gives_check(Move m) const {
 }
 
 
+template<PieceType Pt, Color Us>
+Bitboard pieceMobility(const Position& pos) {
+  Bitboard b;
+  if (Pt == PAWN) {
+    b = pos.pieces(Us, PAWN);
+    b = pawn_attacks_bb<Us>(b);
+  } else {
+    b = 0;
+    const Square* pl = pos.squares<Pt>(Us);
+    for (Square s = *pl; s != SQ_NONE; s = *++pl) {
+      b |= attacks_bb<Pt>(s, pos.pieces());
+    }
+  }
+  return b;
+}
+
 /// Position::do_move() makes a move, and saves all information necessary
 /// to a StateInfo object. The move is assumed to be legal. Pseudo-legal
 /// moves should be filtered out before this function is called.
@@ -889,6 +905,20 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
   // Update king attacks used for fast check detection
   set_check_info(st);
+
+  st->mobility[0][0] = pieceMobility<PAWN, WHITE>(*this);
+  st->mobility[0][1] = pieceMobility<KNIGHT, WHITE>(*this);
+  st->mobility[0][2] = pieceMobility<BISHOP, WHITE>(*this);
+  st->mobility[0][3] = pieceMobility<ROOK, WHITE>(*this);
+  st->mobility[0][4] = pieceMobility<QUEEN, WHITE>(*this);
+  st->mobility[0][5] = pieceMobility<KING, WHITE>(*this);
+
+  st->mobility[1][0] = pieceMobility<PAWN, BLACK>(*this);
+  st->mobility[1][1] = pieceMobility<KNIGHT, BLACK>(*this);
+  st->mobility[1][2] = pieceMobility<BISHOP, BLACK>(*this);
+  st->mobility[1][3] = pieceMobility<ROOK, BLACK>(*this);
+  st->mobility[1][4] = pieceMobility<QUEEN, BLACK>(*this);
+  st->mobility[1][5] = pieceMobility<KING, BLACK>(*this);
 
   // Calculate the repetition info. It is the ply distance from the previous
   // occurrence of the same position, negative in the 3-fold case, or zero

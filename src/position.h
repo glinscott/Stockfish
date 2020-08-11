@@ -59,6 +59,7 @@ struct StateInfo {
   // Used by NNUE
   Eval::NNUE::Accumulator accumulator;
   DirtyPiece dirtyPiece;
+  Bitboard mobility[2][6];
 };
 
 

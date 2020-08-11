@@ -33,6 +33,7 @@ namespace Eval::NNUE::Features {
 
   // Trigger to perform full calculations instead of difference only
   enum class TriggerEvent {
+    kNone,
     kFriendKingMoved // calculate full evaluation when own king moves
   };
 

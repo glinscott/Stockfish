@@ -111,7 +111,8 @@ using namespace Trace;
 namespace {
 
   // Threshold for lazy and space evaluation
-  constexpr Value LazyThreshold1 =  Value(1400);
+  Value LazyThreshold1 =  Value(1400);
+  TUNE(LazyThreshold1, 0, 5);
   constexpr Value LazyThreshold2 =  Value(1300);
   constexpr Value SpaceThreshold = Value(12222);
   constexpr Value NNUEThreshold  =   Value(575);
