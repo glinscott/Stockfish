@@ -976,6 +976,10 @@ moves_loop: // When in check, search starts from here
     // Mark this node as being searched
     ThreadHolding th(thisThread, posKey, ss->ply);
 
+    Square prevTo = to_sq((ss-1)->currentMove);
+    PieceType prevPt = type_of(pos.piece_on(prevTo));
+    Bitboard attackedFromPrevious = attacks_bb(prevPt, prevTo, pos.pieces());
+
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
@@ -1020,7 +1024,9 @@ moves_loop: // When in check, search starts from here
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-          moveCountPruning = moveCount >= futility_move_count(improving, depth);
+          moveCountPruning = moveCount >= futility_move_count(improving, depth) &&
+            // Don't prune if we are escaping being directly attacked by a less valuable piece.
+            !((attackedFromPrevious & from_sq(move)) && PieceValue[MG][prevPt] < PieceValue[MG][pos.moved_piece(move)]);
 
           // Reduced depth of the next LMR search
           int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), 0);
