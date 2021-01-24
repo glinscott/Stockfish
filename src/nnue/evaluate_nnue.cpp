@@ -128,9 +128,9 @@ namespace Eval::NNUE {
     ASSERT_ALIGNED(buffer, alignment);
 
     feature_transformer->Transform(pos, transformed_features);
-    const auto output = network->Propagate(transformed_features, buffer);
+    const float* output = network->Propagate(transformed_features, buffer);
 
-    return static_cast<Value>(output[0] / FV_SCALE);
+    return static_cast<Value>(output[0] * 600);
   }
 
   // Load eval, from a file stream or a memory stream

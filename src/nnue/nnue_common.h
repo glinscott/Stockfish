@@ -100,7 +100,7 @@ namespace Eval::NNUE {
   };
 
   // Type of input feature after conversion
-  using TransformedFeatureType = std::uint8_t;
+  using TransformedFeatureType = float;
   using IndexType = std::uint32_t;
 
   // Round n up to be a multiple of base
@@ -117,13 +117,9 @@ namespace Eval::NNUE {
 
       IntType result;
       std::uint8_t u[sizeof(IntType)];
-      typename std::make_unsigned<IntType>::type v = 0;
 
       stream.read(reinterpret_cast<char*>(u), sizeof(IntType));
-      for (std::size_t i = 0; i < sizeof(IntType); ++i)
-          v = (v << 8) | u[sizeof(IntType) - i - 1];
-
-      std::memcpy(&result, &v, sizeof(IntType));
+      std::memcpy(&result, &u, sizeof(IntType));
       return result;
   }
 
