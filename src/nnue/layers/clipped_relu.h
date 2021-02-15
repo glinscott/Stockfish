@@ -71,24 +71,22 @@ namespace Eval::NNUE::Layers {
 
   #if defined(USE_AVX2)
       const __m256 kZero = _mm256_setzero_ps();
-      const __m256 kOne = _mm256_set1_ps(1.0f);
 
       const auto in = reinterpret_cast<const __m256*>(input);
       const auto out = reinterpret_cast<__m256*>(output);
       for (IndexType i = 0; i < kNumChunks; ++i) {
         const __m256 v = in[i];
-        out[i] = _mm256_min_ps(_mm256_max_ps(v, kZero), kOne);
+        out[i] = _mm256_max_ps(v, kZero);
       }
 
   #elif defined(USE_SSE2)
       const __m128 kZero = _mm_setzero_ps();
-      const __m128 kOne = _mm_set1_ps(1.0f);
 
       const auto in = reinterpret_cast<const __m128*>(input);
       const auto out = reinterpret_cast<__m128*>(output);
       for (IndexType i = 0; i < kNumChunks; ++i) {
         const __m128 v = in[i];
-        out[i] = _mm_min_ps(_mm_max_ps(v, kZero), kOne);
+        out[i] = _mm_max_ps(v, kZero);
       }
   #endif
 
