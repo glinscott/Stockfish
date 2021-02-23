@@ -29,10 +29,12 @@ namespace Eval::NNUE::Layers {
   // Affine transformation layer
   template <typename PreviousLayer, IndexType OutputDimensions, bool UseRelu>
   class AffineTransform {
+    static constexpr bool kFastScaling = true;
+
 #if defined(USE_AVX512) || defined(USE_AVX2)
-			static constexpr bool kVectorized = UseRelu;
+    static constexpr bool kVectorized = UseRelu;
 #else
-			static constexpr bool kVectorized = false;
+    static constexpr bool kVectorized = false;
 #endif
    public:
     // Input/output type
@@ -70,7 +72,7 @@ namespace Eval::NNUE::Layers {
 
       scale_ = read_little_endian<std::int32_t>(stream);
       scale_bits_ = read_little_endian<std::int32_t>(stream);
-      if (UseRelu) {
+      if (UseRelu && kFastScaling) {
         scale_ >>= 16;
         scale_bits_ -= 16;
       }
@@ -169,13 +171,22 @@ namespace Eval::NNUE::Layers {
                   vec_add_dpbusd_32x4(sumptr[j], in0, col0[j], in1, col1[j], in2, col2[j], in3, col3[j]);
           }
 
-          vec_t *outptr = reinterpret_cast<vec_t*>(output);
-          vec_t zero_point_vec = vec_set_32(zero_point_sum);
-          for (int j = 0; j * kSimdWidth < kOutputDimensions; j++) {
-            __m256i sum0 = m256_scale(sumptr[j * 4 + 0], sumptr[j * 4 + 1], zero_point_vec, kScale);
-            __m256i sum1 = m256_scale(sumptr[j * 4 + 2], sumptr[j * 4 + 3], zero_point_vec, kScale);
-            _mm256_store_si256(&outptr[j], _mm256_permute4x64_epi64(
-                _mm256_packus_epi16(sum0, sum1), kControl));
+          if (kFastScaling) {
+            vec_t *outptr = reinterpret_cast<vec_t*>(output);
+            vec_t zero_point_vec = vec_set_32(zero_point_sum);
+            for (int j = 0; j * kSimdWidth < kOutputDimensions; j++) {
+              __m256i sum0 = m256_scale(sumptr[j * 4 + 0], sumptr[j * 4 + 1], zero_point_vec, kScale);
+              __m256i sum1 = m256_scale(sumptr[j * 4 + 2], sumptr[j * 4 + 3], zero_point_vec, kScale);
+              _mm256_store_si256(&outptr[j], _mm256_permute4x64_epi64(
+                  _mm256_packus_epi16(sum0, sum1), kControl));
+            }
+          } else {
+            for (IndexType i = 0; i < kOutputDimensions; ++i) {
+              std::int32_t sum = sums[i];
+              sum = rounding_shift(static_cast<std::int64_t>(sum - zero_point_sum) * scale_, scale_bits_);
+              sum = std::max(std::min(sum, 255), 0);
+              output[i] = static_cast<OutputType>(sum);
+            }
           }
 #endif
       } else {
