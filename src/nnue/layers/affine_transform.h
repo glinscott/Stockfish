@@ -29,7 +29,7 @@ namespace Eval::NNUE::Layers {
   // Affine transformation layer
   template <typename PreviousLayer, IndexType OutputDimensions, bool UseRelu>
   class AffineTransform {
-    static constexpr bool kFastScaling = true;
+    static constexpr bool kFastScaling = false;
 
 #if defined(USE_AVX512) || defined(USE_AVX2)
     static constexpr bool kVectorized = UseRelu;
