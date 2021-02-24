@@ -76,13 +76,11 @@ namespace Eval::NNUE {
       constexpr IndexType kChunkSize = kSimdWidth / sizeof(TransformedFeatureType);
       constexpr IndexType kNumChunks = kHalfDimensions / kChunkSize;
       const __m256 kZero = _mm256_setzero_ps();
-      const __m256 kOne = _mm256_set1_ps(1.0f);
 
   #elif defined(USE_SSE2)
       constexpr IndexType kChunkSize = kSimdWidth / sizeof(TransformedFeatureType);
       constexpr IndexType kNumChunks = kHalfDimensions / kChunkSize;
       const __m128 kZero = _mm_setzero_ps();
-      const __m128 kOne = _mm_set1_ps(1.0f);
 
   #elif defined(USE_MMX)
       static_assert(false);
@@ -99,7 +97,7 @@ namespace Eval::NNUE {
         auto out = reinterpret_cast<__m256*>(&output[offset]);
         for (IndexType j = 0; j < kNumChunks; ++j) {
           __m256 sum = reinterpret_cast<const __m256*>(accumulation[perspectives[p]][0])[j];
-          out[j] = _mm256_min_ps(_mm256_max_ps(sum, kZero), kOne);
+          out[j] = _mm256_max_ps(sum, kZero);
         }
 
   #elif defined(USE_SSE2)
@@ -107,7 +105,7 @@ namespace Eval::NNUE {
         for (IndexType j = 0; j < kNumChunks; ++j) {
           __m128 sum = reinterpret_cast<const __m128*>(accumulation[perspectives[p]][0])[j];
 
-          out[j] = _mm_min_ps(_mm_max_ps(sum, kZero), kOne);
+          out[j] = _mm_max_ps(sum, kZero);
         }
   #endif
 

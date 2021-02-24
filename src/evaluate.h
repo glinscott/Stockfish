@@ -36,7 +36,10 @@ namespace Eval {
   // The default net name MUST follow the format nn-[SHA256 first 12 digits].nnue
   // for the build process (profile-build and fishtest) to work. Do not change the
   // name of the macro, as it is used in the Makefile.
-  #define EvalFileDefaultName   "nn-bb0860eafeb8.nnue"
+  //
+  // Epoch 338 -40 elo quantized.
+  // TODO: Debug why results are so wildly off for float branch.
+  #define EvalFileDefaultName   "nn-b20e264c6f88.nnue"
 
   namespace NNUE {
 
